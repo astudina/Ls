@@ -1,45 +1,34 @@
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Date;
 
 public class Ls {
-    private String content = "";
-    String[] args;
-    boolean fl_l = false;
-    boolean fl_h = false;
-    boolean fl_r = false;
-    boolean fl_o = false;
-    String nameAnotherFile = null;
+    private boolean fl_l;
+    private boolean fl_h;
+    private boolean fl_r;
+    private boolean fl_o;
+    private String nameAnotherFile;
 
-    public Ls(String[] args) {
-        this.args = args;
-        String path = args[args.length - 1];
-
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equalsIgnoreCase("-l")) {
-                fl_l = true;
-            }
-            if (args[i].equalsIgnoreCase("-h")) {
-                fl_h = true;
-            }
-            if (args[i].equalsIgnoreCase("-r")) {
-                fl_r = true;
-            }
-            if (args[i].equalsIgnoreCase("-o")) {
-                fl_o = true;
-                nameAnotherFile = args[i + 1];
-            }
-        }
-        File file = new File(path);
-
-        output(makeContent(file, fl_l, fl_h, fl_r), fl_o, nameAnotherFile);
+    public Ls(boolean fl_l, boolean fl_h, boolean fl_r) {
+        this(fl_l, fl_h, fl_r, "");
     }
 
-    private void output(String content, boolean toFile, String path) {
+    public Ls(boolean fl_l, boolean fl_h, boolean fl_r, String nameAnotherFile) {
+        this.fl_l = fl_l;
+        this.fl_h = fl_h;
+        this.fl_r = fl_r;
+        this.fl_o = true;
+        this.nameAnotherFile = nameAnotherFile;
+    }
+
+    public void output(File file) {
+
+        String content = makeContent(file);
         try {
             OutputStream outputStream;
-            if (toFile) {
-                File f = new File(path);
+            if (fl_o) {
+                File f = new File(nameAnotherFile);
                 outputStream = new FileOutputStream(f);
             } else {
                 outputStream = System.out;
@@ -56,35 +45,31 @@ public class Ls {
         }
     }
 
-    private String makeContent(File file, boolean l, boolean h, boolean r) {
+    private String makeContent(File file) {
         String content = "";
-        if (l) {
+        if (fl_l) {
             //если вывод в длинном формате
-            if (file.listFiles() != null) {
+            if (file.isDirectory()) {
                 //если по этому пути лежит директория
                 Arrays.sort(file.listFiles());
                 for (int i = 0; i < file.listFiles().length; i++) {
                     //если стоит флаг r , то считаем индекс с конца, иначе в прямом порядке
-                    File f = file.listFiles()[r ? file.listFiles().length - 1 - i : i];
+                    File f = file.listFiles()[fl_r ? file.listFiles().length - 1 - i : i];
 
-                    Date d = new Date(f.lastModified());
-                    content += f.getName() + " " + humanReadableXrw(f, h) + " " + "last mod.: " + d.toString()
-                            + " " + "length: " + humanReadableSize(f, h) + "\n";
+
+                    content += contentMaker(f);
                 }
             } else {
                 //если по этому пути лежит файл
-                Date d = new Date(file.lastModified());
-
-                content += file.getName() + " " + humanReadableXrw(file, h) + " " + "last mod.: " + d.toString()
-                        + " " + "length: " + humanReadableSize(file, h) + "\n";
+                content += contentMaker(file);
             }
         } else {
             //если нужно вывести просто имена файлов в директории
-            if (file.list() != null) {
+            if (file.isDirectory()) {
                 Arrays.sort(file.list());
                 for (int i = 0; i < file.list().length; i++) {
                     //если стоит флаг r , то считаем индекс с конца, иначе в прямом порядке
-                    String s = file.list()[r ? file.list().length - 1 - i : i];
+                    String s = file.list()[fl_r ? file.list().length - 1 - i : i];
                     content += s + "\n";
                 }
             } else {
@@ -96,29 +81,44 @@ public class Ls {
         return content;
     }
 
+    private String contentMaker(File f) {
+        Date d = new Date(f.lastModified());
+        return f.getName() + " " + humanReadableXrw(f, fl_h) + " " + "last mod.: " + d.toString()
+                + " " + "length: " + humanReadableSize(f, fl_h) + "\n";
+    }
+
     private String humanReadableSize(File file, boolean flag) {
 
-        long length = file.length();
+        double length = file.length();
         if (!flag) {
             return String.valueOf(length) + "bytes";
         } else {
-            String size = "";
-            if (length / (1024 * 1024 * 1024) > 0) {
-                size += length / 1024 * 1024 * 1024 + "Gb ";
+            int cnt = 0;
+            while (length >= 100) {
+                length /= 1024;
+                cnt++;
             }
-            if (length / (1024 * 1024) > 0) {
-                size += length / 1024 * 1024 + "Mb ";
+
+            DecimalFormat f = new DecimalFormat("##.00");
+            String size = f.format(length);
+            switch (cnt) {
+                case 0:
+                    size += "bytes";
+                    break;
+                case 1:
+                    size += "Kb";
+                    break;
+                case 2:
+                    size += "Mb";
+                    break;
+                case 4:
+                    size += "Gb";
+                    break;
             }
-            if (length / 1024 > 0) {
-                size += length / 1024 + "Kb ";
-            }
-            if (size.equals("") | length % 1024 > 0) {
-                size += length % 1024 + "bytes";
-            }
+
             return size;
         }
     }
-
 
     public String humanReadableXrw(File file, boolean flag) {
         String opportunities = "";
@@ -146,5 +146,25 @@ public class Ls {
             opportunities = String.valueOf(xrw);
         }
         return opportunities;
+    }
+
+    public void setFl_l(boolean fl_l) {
+        this.fl_l = fl_l;
+    }
+
+    public void setFl_h(boolean fl_h) {
+        this.fl_h = fl_h;
+    }
+
+    public void setFl_r(boolean fl_r) {
+        this.fl_r = fl_r;
+    }
+
+    public void setFl_o(boolean fl_o) {
+        this.fl_o = fl_o;
+    }
+
+    public void setNameAnotherFile(String nameAnotherFile) {
+        this.nameAnotherFile = nameAnotherFile;
     }
 }
