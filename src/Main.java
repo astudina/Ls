@@ -10,7 +10,13 @@ public class Main {
         boolean fl_o = false;
         String nameAnotherFile = "";
         //разбираем строку параметров
-        for (int i = 0; i < args.length; i++) {
+        // -1 потому что не рассматриваем последний элемент; -2 потому что проверяем, есть ли имя директории после -o
+        for (int i = 0; i < args.length - 1; i++) {
+            if (args[i].equalsIgnoreCase("-o") && i < args.length - 2) {
+                fl_o = true;
+                nameAnotherFile = args[i + 1];
+                args[i + 1] = "";
+            }
             if (args[i].equalsIgnoreCase("-l")) {
                 fl_l = true;
             }
@@ -20,11 +26,8 @@ public class Main {
             if (args[i].equalsIgnoreCase("-r")) {
                 fl_r = true;
             }
-            if (args[i].equalsIgnoreCase("-o")) {
-                fl_o = true;
-                nameAnotherFile = args[i + 1];
-            }
         }
+
 
         //создаём файлик/директорию
         File file = new File(args[args.length - 1]);

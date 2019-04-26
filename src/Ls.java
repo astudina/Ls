@@ -18,8 +18,14 @@ public class Ls {
         this.fl_l = fl_l;
         this.fl_h = fl_h;
         this.fl_r = fl_r;
-        this.fl_o = true;
-        this.nameAnotherFile = nameAnotherFile;
+
+        if (!nameAnotherFile.equals("")) {
+            fl_o = true;
+            this.nameAnotherFile = nameAnotherFile;
+        } else {
+            fl_o = false;
+        }
+
     }
 
     public void output(File file) {
@@ -45,7 +51,7 @@ public class Ls {
         }
     }
 
-    private String makeContent(File file) {
+    public String makeContent(File file) {
         String content = "";
         if (fl_l) {
             //если вывод в длинном формате
@@ -55,7 +61,6 @@ public class Ls {
                 for (int i = 0; i < file.listFiles().length; i++) {
                     //если стоит флаг r , то считаем индекс с конца, иначе в прямом порядке
                     File f = file.listFiles()[fl_r ? file.listFiles().length - 1 - i : i];
-
 
                     content += contentMaker(f);
                 }
@@ -81,16 +86,15 @@ public class Ls {
         return content;
     }
 
-    private String contentMaker(File f) {
+    public String contentMaker(File f) {
         Date d = new Date(f.lastModified());
-        return f.getName() + " " + humanReadableXrw(f, fl_h) + " " + "last mod.: " + d.toString()
-                + " " + "length: " + humanReadableSize(f, fl_h) + "\n";
+        return f.getName() + " " + humanReadableXrw(f) + " " + "last mod.: " + d.toString()
+                + " " + "length: " + humanReadableSize(f) + "\n";
     }
 
-    private String humanReadableSize(File file, boolean flag) {
-
+    public String humanReadableSize(File file) {
         double length = file.length();
-        if (!flag) {
+        if (!fl_h) {
             return String.valueOf(length) + "bytes";
         } else {
             int cnt = 0;
@@ -99,30 +103,18 @@ public class Ls {
                 cnt++;
             }
 
-            DecimalFormat f = new DecimalFormat("##.00");
+            DecimalFormat f = new DecimalFormat("0.0");
             String size = f.format(length);
-            switch (cnt) {
-                case 0:
-                    size += "bytes";
-                    break;
-                case 1:
-                    size += "Kb";
-                    break;
-                case 2:
-                    size += "Mb";
-                    break;
-                case 4:
-                    size += "Gb";
-                    break;
-            }
+            String[] list = new String[]{"bytes", "Kb", "Mb", "Gb", "Tb"};
+            size += list[cnt];
 
             return size;
         }
     }
 
-    public String humanReadableXrw(File file, boolean flag) {
+    public String humanReadableXrw(File file) {
         String opportunities = "";
-        if (flag) {
+        if (fl_h) {
             if (file.canExecute()) {
                 opportunities += "x";
             }
