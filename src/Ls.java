@@ -9,6 +9,7 @@ public class Ls {
     private boolean fl_r;
     private boolean fl_o;
     private String nameAnotherFile;
+    private static final String[] list = new String[]{"bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb"};
 
     public Ls(boolean fl_l, boolean fl_h, boolean fl_r) {
         this(fl_l, fl_h, fl_r, "");
@@ -25,33 +26,36 @@ public class Ls {
         } else {
             fl_o = false;
         }
-
     }
 
-    public void output(File file) {
-
-        String content = makeContent(file);
+    protected void output(File file){
+        OutputStream outputStream;
         try {
-            OutputStream outputStream;
             if (fl_o) {
                 File f = new File(nameAnotherFile);
                 outputStream = new FileOutputStream(f);
             } else {
                 outputStream = System.out;
             }
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
-            try {
-                bufferedOutputStream.write(content.getBytes());
-                bufferedOutputStream.flush();
-            } catch (IOException e) {
-                System.out.println("output stream unavailable");
-            }
+            output(file, outputStream);
         } catch (FileNotFoundException e) {
-            System.out.println("file not create / io exception");
+            e.printStackTrace();
         }
     }
 
-    public String makeContent(File file) {
+    protected void output(File file, OutputStream outputStream) {
+
+        String content = makeContent(file);
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+        try {
+            bufferedOutputStream.write(content.getBytes());
+            bufferedOutputStream.flush();
+        } catch (IOException e) {
+            System.out.println("output stream unavailable");
+        }
+    }
+
+    protected String makeContent(File file) {
         String content = "";
         if (fl_l) {
             //если вывод в длинном формате
@@ -86,33 +90,32 @@ public class Ls {
         return content;
     }
 
-    public String contentMaker(File f) {
+    protected String contentMaker(File f) {
         Date d = new Date(f.lastModified());
         return f.getName() + " " + humanReadableXrw(f) + " " + "last mod.: " + d.toString()
                 + " " + "length: " + humanReadableSize(f) + "\n";
     }
 
-    public String humanReadableSize(File file) {
+    protected String humanReadableSize(File file) {
         double length = file.length();
         if (!fl_h) {
             return String.valueOf(length) + "bytes";
         } else {
             int cnt = 0;
-            while (length >= 100) {
+            while (length >= 100 & cnt < list.length) {
                 length /= 1024;
                 cnt++;
             }
 
             DecimalFormat f = new DecimalFormat("0.0");
             String size = f.format(length);
-            String[] list = new String[]{"bytes", "Kb", "Mb", "Gb", "Tb"};
             size += list[cnt];
 
             return size;
         }
     }
 
-    public String humanReadableXrw(File file) {
+    protected String humanReadableXrw(File file) {
         String opportunities = "";
         if (fl_h) {
             if (file.canExecute()) {

@@ -9,24 +9,28 @@ public class Main {
         boolean fl_r = false;
         boolean fl_o = false;
         String nameAnotherFile = "";
+
         //разбираем строку параметров
-        // -1 потому что не рассматриваем последний элемент; -2 потому что проверяем, есть ли имя директории после -o
-        for (int i = 0; i < args.length - 1; i++) {
-            if (args[i].equalsIgnoreCase("-o") && i < args.length - 2) {
-                fl_o = true;
-                nameAnotherFile = args[i + 1];
-                args[i + 1] = "";
-            }
-            if (args[i].equalsIgnoreCase("-l")) {
-                fl_l = true;
-            }
-            if (args[i].equalsIgnoreCase("-h")) {
-                fl_h = true;
-            }
-            if (args[i].equalsIgnoreCase("-r")) {
-                fl_r = true;
+        for (int i = 0; i < args.length - 1; i++){
+            switch (args[i]){
+                case "-o" :
+                    fl_o = true;
+                    nameAnotherFile = args[i + 1];
+                    i++;
+                    break;
+                case "-l":
+                    fl_l = true;
+                    break;
+                case "-h":
+                    fl_h = true;
+                    break;
+                case "-r":
+                    fl_r = true;
+                    break;
             }
         }
+
+
 
 
         //создаём файлик/директорию
