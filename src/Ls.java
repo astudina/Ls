@@ -28,7 +28,7 @@ public class Ls {
         }
     }
 
-    protected void output(File file){
+    void output(File file){
         OutputStream outputStream;
         try {
             if (fl_o) {
@@ -43,7 +43,7 @@ public class Ls {
         }
     }
 
-    protected void output(File file, OutputStream outputStream) {
+    void output(File file, OutputStream outputStream) {
 
         String content = makeContent(file);
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
@@ -55,7 +55,7 @@ public class Ls {
         }
     }
 
-    protected String makeContent(File file) {
+    String makeContent(File file) {
         String content = "";
         if (fl_l) {
             //если вывод в длинном формате
@@ -90,13 +90,13 @@ public class Ls {
         return content;
     }
 
-    protected String contentMaker(File f) {
+    private String contentMaker(File f) {
         Date d = new Date(f.lastModified());
         return f.getName() + " " + humanReadableXrw(f) + " " + "last mod.: " + d.toString()
                 + " " + "length: " + humanReadableSize(f) + "\n";
     }
 
-    protected String humanReadableSize(File file) {
+    private String humanReadableSize(File file) {
         double length = file.length();
         if (!fl_h) {
             return String.valueOf(length) + "bytes";
@@ -115,7 +115,7 @@ public class Ls {
         }
     }
 
-    protected String humanReadableXrw(File file) {
+    private String humanReadableXrw(File file) {
         String opportunities = "";
         if (fl_h) {
             if (file.canExecute()) {
